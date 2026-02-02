@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeafAI | Plant Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --forest: #1b4332; --leaf: #2d6a4f; --mint: #d8f3dc; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #d8f3dc, #95d5b2); min-height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
+        .card { background: white; width: 900px; border-radius: 25px; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .sidebar { background: var(--forest); color: white; padding: 40px; display: flex; flex-direction: column; justify-content: center; }
+        .main { padding: 40px; display: flex; flex-direction: column; gap: 20px; }
+        .upload-box { border: 3px dashed var(--leaf); border-radius: 15px; padding: 40px; text-align: center; cursor: pointer; background: var(--mint); }
+        .btn { padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-analyze { background: var(--leaf); color: white; width: 100%; }
+        .btn-pdf { background: white; color: #e63946; border: 2px solid #e63946; margin-top: auto; }
+        #results { background: #f8f9fa; padding: 15px; border-radius: 10px; min-height: 100px; white-space: pre-wrap; font-size: 0.9rem; border: 1px solid #eee; }
+        input[type="file"] { display: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="sidebar">
+            <h2><i class="fas fa-seedling"></i> LeafAI Pro</h2>
+            <p>Upload a photo of your plant to get a professional health diagnosis powered by Gemini AI.</p>
+        </div>
+        <div class="main">
+            <label for="imgInput" class="upload-box">
+                <i class="fas fa-camera fa-2x" style="color:var(--leaf)"></i>
+                <p id="fileName">Click to Upload Plant Image</p>
+            </label>
+            <input type="file" id="imgInput" accept="image/*">
+            
+            <button class="btn btn-analyze" onclick="analyzePlant()">
+                <i class="fas fa-microscope"></i> ANALYSE PLANT
+            </button>
+
+            <div id="results">Analysis results will appear here...</div>
+
+            <button class="btn btn-pdf" onclick="window.print()">
+                <i class="fas fa-file-pdf"></i> DOWNLOAD PDF REPORT
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const imgInput = document.getElementById('imgInput');
+        const fileName = document.getElementById('fileName');
+        const resultsDiv = document.getElementById('results');
+
+        imgInput.onchange = () => { if(imgInput.files[0]) fileName.innerText = imgInput.files[0].name; };
+
+        async function analyzePlant() {
+            if (!imgInput.files[0]) return alert("Please select an image!");
+            
+            resultsDiv.innerText = "Analyzing... please wait.";
+            const formData = new FormData();
+            formData.append('image', imgInput.files[0]);
+
+            try {
+                const res = await fetch('/analyze', { method: 'POST', body: formData });
+                const data = await res.json();
+                resultsDiv.innerText = data.results || data.error;
+            } catch (err) {
+                resultsDiv.innerText = "Error connecting to server.";
+            }
+        }
+    </script>
+</body>
+</html>
